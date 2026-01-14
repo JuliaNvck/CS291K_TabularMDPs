@@ -49,8 +49,10 @@ def bellman_V_pi(P, r, gamma, pi, V):
 
 def bellman_Q_pi(P, r, gamma, pi, Q):
     """Performs one policy Bellman update on the state-action value function candidate Q for policy pi."""
-    return Q  # TODO: Implement.
-
+    sum_a = np.sum(pi * Q, axis=1)  # shape (S,) - expected value for each state under policy pi
+    expected_next_V = P @ sum_a  # shape (S, A) - expected value of next state s' for each (s, a)
+    Q = r + gamma * expected_next_V  # shape (S, A) - immediate reward plus discounted expected value of next state
+    return Q
 
 def bellman_V_opt(P, r, gamma, V):
     """Performs one optimal Bellman update on the state value function candidate V."""
