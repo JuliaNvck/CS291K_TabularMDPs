@@ -35,8 +35,6 @@ for development. Instead, you should write your own tests using your test-case
 MDPs from Task 2, as well as the Maze MDP tools from maze.py. 
 """
 
-# Takes a current estimate of the value function V and updates it to be closer to the true value of a specific policy pi
-# (TπV )(s) = E a∼π(s), s′∼P (·|s,a) [r(s, a) + γV (s′)]
 def bellman_V_pi(P, r, gamma, pi, V):
     """Performs one policy Bellman update on the state value function candidate V for policy pi."""
     # immediate reward plus the discounted expected value of the next state s'
@@ -57,13 +55,15 @@ def bellman_Q_pi(P, r, gamma, pi, Q):
 def bellman_V_opt(P, r, gamma, V):
     """Performs one optimal Bellman update on the state value function candidate V."""
     V = np.max(r + gamma * (P @ V), axis=1)  # shape (S,) - max over actions
-
-    return V  # TODO: Implement.
+    return V
 
 
 def bellman_Q_opt(P, r, gamma, Q):
     """Performs one optimal Bellman update on the state-action value function candidate Q."""
-    return Q  # TODO: Implement.
+    max_next_Q = np.max(Q, axis=1)  # shape (S,) - max over actions for each state
+    expected_next_V = P @ max_next_Q  # shape (S, A) - expected value of next state s' for each (s, a)
+    Q = r + gamma * expected_next_V # shape (S, A) - immediate reward plus discounted expected value of next state
+    return Q
 
 
 """Task 2: Implement some test MDPs.
