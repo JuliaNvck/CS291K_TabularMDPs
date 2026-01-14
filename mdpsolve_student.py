@@ -35,6 +35,7 @@ for development. Instead, you should write your own tests using your test-case
 MDPs from Task 2, as well as the Maze MDP tools from maze.py. 
 """
 
+# Computes expected immediate reward plus discounted expected next-state V under pi.
 def bellman_V_pi(P, r, gamma, pi, V):
     """Performs one policy Bellman update on the state value function candidate V for policy pi."""
     # immediate reward plus the discounted expected value of the next state s'
@@ -44,9 +45,9 @@ def bellman_V_pi(P, r, gamma, pi, V):
     V = np.sum(weighted_values, axis=1)  # shape (S,) - sum over actions to get expected value for each state
     return V
 
-
 def bellman_Q_pi(P, r, gamma, pi, Q):
     """Performs one policy Bellman update on the state-action value function candidate Q for policy pi."""
+# Computes immediate reward plus discounted expected next-state value under policy pi for each state-action pair.
     sum_a = np.sum(pi * Q, axis=1)  # shape (S,) - expected value for each state under policy pi
     expected_next_V = P @ sum_a  # shape (S, A) - expected value of next state s' for each (s, a)
     Q = r + gamma * expected_next_V  # shape (S, A) - immediate reward plus discounted expected value of next state
@@ -54,12 +55,14 @@ def bellman_Q_pi(P, r, gamma, pi, Q):
 
 def bellman_V_opt(P, r, gamma, V):
     """Performs one optimal Bellman update on the state value function candidate V."""
+# Computes immediate reward plus discounted expected next-state V using greedy (max over actions) update.
     V = np.max(r + gamma * (P @ V), axis=1)  # shape (S,) - max over actions
     return V
 
 
 def bellman_Q_opt(P, r, gamma, Q):
     """Performs one optimal Bellman update on the state-action value function candidate Q."""
+# Computes immediate reward plus discounted expected next-state value where next-state value uses the max over actions.
     max_next_Q = np.max(Q, axis=1)  # shape (S,) - max over actions for each state
     expected_next_V = P @ max_next_Q  # shape (S, A) - expected value of next state s' for each (s, a)
     Q = r + gamma * expected_next_V # shape (S, A) - immediate reward plus discounted expected value of next state
@@ -259,8 +262,23 @@ of `pi` from the assignment-wide conventions.
 
 PI always generates a greedy policy, so each action distribution (row of pi)
 should be "one-hot", i.e. all zeros except for a single one.
+
+Q: entry Q[s, a] is the estimated value of taking action a in state s.
+pi: entry pi[s, a] is the probability of taking action a in state s.
 """
 def policy_iteration(P, r, gamma, PE_iters):
     """Performs policy iteration, stopping when the policy does not change."""
-    return np.zeros(r.shape)  # TODO: Implement.
+    S, A = r.shape
+    pi = np.zeros((S, A))
+    pi[:, 0] = 1.0  # Initial policy: always take action 0
+    while True:
+        Q = policy_evaluation_Q(P, r, gamma, pi, PE_iters) # shape (S, A) - returns a Q estimate for policy p
+        new_pi = np.zeros((S, A))
+        best_actions = np.argmax(Q, axis=1) # shape (S,) - scans each row (each state) and returns the column index of the maximum value in that row
+        for s in range(S):
+            new_pi[s, best_actions[s]] = 1.0 # Greedy policy improvement: take the best action with probability 1
+        if np.array_equal(new_pi, pi):
+            break
+        pi = new_pi
+    return pi
 
