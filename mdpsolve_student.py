@@ -216,23 +216,35 @@ NOTE: The initial guess should always be zero, otherwise tests will fail.
 
 def value_iteration_V(P, r, gamma, iters):
     """Performs `iters` steps of value iteration."""
-    return np.zeros((r.shape[0]))  # TODO: Implement.
+    S = P.shape[0]
+    V = np.zeros(S)
+    for _ in range(iters):
+        V = bellman_V_opt(P, r, gamma, V)
+    return V
 
 
 def policy_evaluation_V(P, r, gamma, pi, iters):
     """Performs `iters` steps of policy evaluation for policy pi."""
-    return np.zeros((r.shape[0]))  # TODO: Implement.
-
+    S = P.shape[0]
+    V = np.zeros(S)
+    for _ in range(iters):
+        V = bellman_V_pi(P, r, gamma, pi, V)
+    return V
 
 def value_iteration_Q(P, r, gamma, iters):
     """Performs `iters` steps of Q-value iteration."""
-    return np.zeros(r.shape)  # TODO: Implement.
+    Q = np.zeros(r.shape)
+    for _ in range(iters):
+        Q = bellman_Q_opt(P, r, gamma, Q)
+    return Q
 
 
 def policy_evaluation_Q(P, r, gamma, pi, iters):
     """Performs `iters` steps of Q- policy evaluation for policy pi."""
-    return np.zeros(r.shape)  # TODO: Implement.
-
+    Q = np.zeros(r.shape)
+    for _ in range(iters):
+        Q = bellman_Q_pi(P, r, gamma, pi, Q)
+    return Q
 
 """Task 4: Implement Policy Iteration.
 
