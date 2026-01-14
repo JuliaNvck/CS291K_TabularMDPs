@@ -56,6 +56,8 @@ def bellman_Q_pi(P, r, gamma, pi, Q):
 
 def bellman_V_opt(P, r, gamma, V):
     """Performs one optimal Bellman update on the state value function candidate V."""
+    V = np.max(r + gamma * (P @ V), axis=1)  # shape (S,) - max over actions
+
     return V  # TODO: Implement.
 
 
