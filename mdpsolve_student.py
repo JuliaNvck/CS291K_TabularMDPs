@@ -87,7 +87,11 @@ def mdp_uniform(S, A):
 
     Returns: a tuple (P, r), as defined in the assignment-wide conventions.
     """
-    return np.zeros((S, A, S)), np.zeros((S, A))  #TODO: Implement.
+    # P: Shape (S, A, S)
+    # Fill with 1/S so that every next state is equally likely
+    P = np.ones((S, A, S)) / S  # Uniform transition probabilities
+    r = np.ones((S, A))  # Reward of 1 for all state-action pairs
+    return P, r
 
 
 def mdp_uniform_Vopt(S, A, gamma):
@@ -99,15 +103,16 @@ def mdp_uniform_Vopt(S, A, gamma):
         gamma (float): Discount factor.
 
     Returns: V (array(S)): optimal value function table.
+    V(s) = 1 + gamma * 1 + gamma^2 * 1 + gamma^3 * 1 + ... = 1 / (1 - gamma)
     """
-    return np.zeros(S)  #TODO: Implement.
+    return np.ones(S) / (1 - gamma)
 
 
 def mdp_statepick(S):
     """An MDP where the action directly selects the next state.
 
     Desired output MDP: The number of actions is equal to S. When the i'th
-        action is taken, the i'th state is the next state with probability 1.
+        action is taken, the i'th state is the next state with probability 1. P(s_i|s, a_i) = 1.
         The reward is 1 for taking action 0 in state 0; zero everywhere else.
 
     Args:
@@ -115,8 +120,13 @@ def mdp_statepick(S):
 
     Returns: a tuple (P, r), as defined in the assignment-wide conventions.
     """
-    return np.zeros((S, S, S)), np.zeros((S, S))  #TODO: Implement.
-
+    P = np.zeros((S, S, S))
+    r = np.zeros((S, S))
+    for s in range(S):
+        for a in range(S):
+            P[s, a, a] = 1.0  # Taking action a leads to state a with probability 1
+    r[0, 0] = 1.0  # Reward of 1 for taking action 0 in state 0
+    return P, r
 
 def mdp_statepick_Vopt(S, gamma):
     """Returns the optimal state-value function for mdp_statepick.
@@ -127,7 +137,10 @@ def mdp_statepick_Vopt(S, gamma):
 
     Returns: V (array(S)): optimal value function table.
     """
-    return np.zeros(S)  #TODO: Implement.
+    V = np.zeros(S)
+    V[0] = 1 / (1 - gamma) # Only state 0 has a reward - geometric series of rewards staying in state 0 - V(0) = 1 + gamma * V(0)
+    V[1:] = gamma / (1 - gamma)  # All other states: One step delay, then the infinite loop - V(s) = 0 + gamma * V(0)$$
+    return V
 
 
 def mdp_line(S):
@@ -152,8 +165,46 @@ def mdp_line(S):
 
     Returns: a tuple (P, r), as defined in the assignment-wide conventions.
     """
-    return np.zeros((S, 3, S)), np.zeros((S, 3))  #TODO: Implement.
-
+    A = 3  # Number of actions: 0 = left, 1 = stay, 2 = right
+    P = np.zeros((S, A, S))
+    r = np.zeros((S, A))
+    for s in range(S):
+        for a in range(A):
+            if a == 0: # Go left
+                if s == 0:
+                    P[s, a, 0] = 0.9
+                    P[s, a, 1] = 0.1
+                else:
+                    P[s, a, s - 1] = 0.8
+                    P[s, a, s] = 0.1
+                    if s + 1 < S:
+                        P[s, a, s + 1] = 0.1
+                    else:
+                        P[s, a, s] += 0.1
+            elif a == 1: # Stay
+                P[s, a, s] = 0.8
+                if s - 1 >= 0:
+                    P[s, a, s - 1] = 0.1
+                else:
+                    P[s, a, s] += 0.1
+                if s + 1 < S:
+                    P[s, a, s + 1] = 0.1
+                else:
+                    P[s, a, s] += 0.1
+            elif a == 2: # Go right
+                if s == S - 1:
+                    P[s, a, S - 1] = 0.9
+                    P[s, a, S - 2] = 0.1
+                else:
+                    P[s, a, s + 1] = 0.8
+                    P[s, a, s] = 0.1
+                    if s - 1 >= 0:
+                        P[s, a, s - 1] = 0.1
+                    else:
+                        P[s, a, s] += 0.1
+    for a in range(A):
+        r[0, a] = 1.0  # Reward of 1 for any action in state 0
+    return P, r
 
 """Task 3: Implement all variants of (Q-)Value Iteration and Policy Evaluation.
 
