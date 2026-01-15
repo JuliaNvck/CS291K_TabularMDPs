@@ -176,7 +176,11 @@ def mdp_line(S):
             if a == 0: # Go left
                 if s == 0:
                     P[s, a, 0] = 0.9
-                    P[s, a, 1] = 0.1
+                    # If there is a state 1, put the 0.1 mass there; otherwise add it to state 0
+                    if S > 1:
+                        P[s, a, 1] = 0.1
+                    else:
+                        P[s, a, 0] += 0.1
                 else:
                     P[s, a, s - 1] = 0.8
                     P[s, a, s] = 0.1
@@ -197,7 +201,11 @@ def mdp_line(S):
             elif a == 2: # Go right
                 if s == S - 1:
                     P[s, a, S - 1] = 0.9
-                    P[s, a, S - 2] = 0.1
+                    # If there is a state S-2 (i.e. S>1) put the 0.1 mass there; otherwise add it to state S-1
+                    if S > 1:
+                        P[s, a, S - 2] = 0.1
+                    else:
+                        P[s, a, S - 1] += 0.1
                 else:
                     P[s, a, s + 1] = 0.8
                     P[s, a, s] = 0.1
